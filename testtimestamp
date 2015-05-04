@@ -1,0 +1,19 @@
+input {
+    stdin{}
+}
+
+filter {
+    date {
+        locale => "en"
+        match => ["message", "MM/dd/YYYY HH:mm"]
+        timezone => "Europe/Vienna"
+        target => "time1"
+        add_field => { "debug" => "timestampMatched"}
+   }
+}
+
+output {
+    stdout {
+            codec => "rubydebug"
+    }
+}
