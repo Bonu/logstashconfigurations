@@ -1,0 +1,49 @@
+input {
+    file {
+    	path => "/Users/janardhanbonu/OneDrive/MUM/datamining/rawdata/Divvy_Stations_Trips_2014-Q1Q2/Divvy_Trips_20140630.csv"
+    	sincedb_path =>  "/Users/janardhanbonu/OneDrive/MUM/datamining/rawdata/Divvy_Stations_Trips_2014-Q1Q2/Divvy_Trips_20140630.idx"
+    	# path => "/Users/janardhanbonu/OneDrive/MUM/datamining/rawdata/Divvy_Stations_Trips_2014-Q1Q2/DivvyTrips_20140623_30.csv"
+    	# sincedb_path =>  "/Users/janardhanbonu/OneDrive/MUM/datamining/rawdata/Divvy_Stations_Trips_2014-Q1Q2/DivvyTrips_20140623_30.idx"
+    	start_position => "beginning"
+    	type => "divvy1daytype"
+    }
+}
+
+filter {
+    csv {
+        columns => ["trip_id","starttime","stoptime","bikeid","tripduration","from_station_id","from_station_name","to_station_id","to_station_name","usertype","gender","birthyear"]
+        separator => ","
+    }
+    
+    date {
+  		match => [ "starttime", "MM/dd/YYYY HH:mm" ]
+	}
+	date {
+  		match => [ "stoptime", "MM/dd/YYYY HH:mm" ]
+	}
+	
+	mutate {
+        remove_field => [ "message" ]
+    }
+    mutate {
+    	convert => { "trip_id" => "integer" }
+    	convert => { "bikeid" => "integer" }
+    	convert => { "from_station_id" => "integer" }
+    	convert => { "to_station_id" => "integer" }
+    	convert => { "birthyear" => "integer" }
+  	}
+    
+}
+
+output {  
+    elasticsearch {
+        action => "index"
+        host => "localhost"
+        index => "logstash-divvy1day"
+        # type => "logstash_divvy1dayindextype"
+        workers => 1
+    }
+    stdout {
+        codec => rubydebug
+    }
+}
